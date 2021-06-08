@@ -1,0 +1,66 @@
+import os
+import re
+
+directory = "D:\\Entertainment\\Shows\\The Office\\"
+count = 1
+
+def relocateExtras (filenames):
+    try:
+        os.mkdir(directory + "Extras")
+    except:
+        None
+
+    for name in filenames:
+        if "featurettes" in name.lower() or "deleted scenes" in name.lower():
+            os.rename(directory + name, directory + "Extras\\" + name)
+
+def rmParantheticals (filename):
+    parantheticals = re.findall(r'\(.*?\)', test_str)
+
+#Season 1 - The Office (US) (2005) - S01E01 - Pilot (1080p BluRay x265 Silence).mkv
+
+def formatNames (filenames, separator):
+    extras = []
+    episodes = []
+
+    for name in filenames:
+        seasonepisode = re.findall("S\d\dE\d\d", name)
+        season = re.findall("Season /d", name)
+        filetype = name[name.rfind("."):]
+
+        name = name.replace(filetype, "")
+
+        sections = name.split(separator)
+        unique = {}
+
+        for section in sections:
+            if len(section) == 1:
+                continue
+
+            if section not in unique:
+                unique[section] = 1
+            else:
+                temp = unique[section]
+                unique.update({section, temp + 1})
+
+        for section in sections:
+            if unique[section] > 2:
+
+
+        if len(seasonepisode) != 0:
+            newname = name.replace(seasonepisode[0], "")
+
+        if len(season) != 0:
+            name.replace(season[0], "")
+
+        print (newname)
+
+filenames = []
+
+for filename in os.listdir(directory):
+    if "." in filename:
+        filenames.append(filename)
+
+#relocateExtras(filenames)
+
+formatNames(filenames)
