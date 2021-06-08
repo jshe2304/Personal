@@ -1,0 +1,60 @@
+import pypandoc
+
+docxFilename = 'somefile.docx'
+
+def docxToStr (filename):
+    text = pypandoc.convert_file(filename, 'txt')
+    assert text == ""
+    return text
+
+def openDoc(location):
+    with open(location, mode = 'r', encoding='utf-8-sig') as reader:
+        return str(reader.read())
+
+def numberless(document):
+    numberless = ''.join([i for i in document if not i.isdigit()])
+    return numberless
+
+def wordList(location):
+    lines = numberless(docxToStr(docxFilename)).split("\n")
+    vocab = []
+
+    for line in lines:
+        if line and (line[0] == '.' or line[0] == "\ufeff"):
+            vocab.append(line.split()[1])
+    
+    f = open("D:\\Documents\\Code\\SATVocab\\allwords.txt", "w+")
+    for word in vocab:
+        string = word + "\n"
+        f.write(string)
+    f.close()
+
+#Turns formatted list of words/definition to format able to be accepted by Quizlet. 
+#Second Parameter takes the path of a list of unknown words, already properly formatted, and only includes the word and definition in the final output if the word is in the unknown list.
+
+def quizletFormat(fullList, unknownWordsPath):
+    vocab = numberless(fullList)[2:]
+
+    byWord = [line.replace("\n", " ") for line in vocab.split("\n. ")]
+    
+    finalList = []
+
+    unknown = ""
+    if unknownWordsPath != "":
+        unknown = openDoc(unknownWordsPath).split("\n")
+
+        for line in byWord:
+            word = line.split(" ")[0]
+            if word in unknown:
+                finalList.append("*".join([line[0:len(word)], line[len(word) + 1:]]))
+    else:
+        for line in byWord:
+            word = line.split("")[0]
+            finalList.append("*".join([line[0:len(word)], line[len(word) + 1:]]))
+
+    return finalList
+
+if __name__ == '__main__':
+    #print(numberless("D:\\Documents\\Code\\SATVocab\\original.txt"))
+
+    [print(line) for line in quizletFormat(docxToStr(docxFilename), "D:\\Documents\\Code\\SATVocab\\words.txt")]
