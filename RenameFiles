@@ -1,7 +1,7 @@
 import os
 import re
 
-directory = "D:\\Entertainment\\Shows\\The Office\\"
+directory = "D:\\Entertainment\\Shows\\The Office - Copy\\"
 count = 1
 
 def relocateExtras (filenames):
@@ -14,53 +14,88 @@ def relocateExtras (filenames):
         if "featurettes" in name.lower() or "deleted scenes" in name.lower():
             os.rename(directory + name, directory + "Extras\\" + name)
 
-def rmParantheticals (filename):
-    parantheticals = re.findall(r'\(.*?\)', test_str)
-
 #Season 1 - The Office (US) (2005) - S01E01 - Pilot (1080p BluRay x265 Silence).mkv
 
-def formatNames (filenames, separator):
-    extras = []
-    episodes = []
+def parantheticals (filename):
+    return re.findall(r"\(.*?\)", filename)
+
+def repeatedInfo (filenames, separator):
+    unique = {}
 
     for name in filenames:
-        seasonepisode = re.findall("S\d\dE\d\d", name)
-        season = re.findall("Season /d", name)
-        filetype = name[name.rfind("."):]
-
-        name = name.replace(filetype, "")
 
         sections = name.split(separator)
-        unique = {}
 
         for section in sections:
-            if len(section) == 1:
-                continue
-
             if section not in unique:
                 unique[section] = 1
             else:
                 temp = unique[section]
-                unique.update({section, temp + 1})
+                unique[section] = temp + 1
 
-        for section in sections:
-            if unique[section] > 2:
+    repeated = []
+
+    for i in unique:
+        if unique[i] > 1:
+            repeated.append(i)
+
+    return repeated
 
 
-        if len(seasonepisode) != 0:
-            newname = name.replace(seasonepisode[0], "")
+def formatNames (filenames, separator):
+    formatted = []
 
-        if len(season) != 0:
-            name.replace(season[0], "")
+    repeated = repeatedInfo(filenames, separator)
 
-        print (newname)
+    for name in filenames:
+        filetype = name[name.rfind("."):]
 
-filenames = []
+        new = name.replace(filetype, "")
 
-for filename in os.listdir(directory):
-    if "." in filename:
-        filenames.append(filename)
+        new = new.split(separator)
 
-#relocateExtras(filenames)
+        for i in repeated:
+            if i in new:
+                new.remove(i)
 
-formatNames(filenames)
+        new = separator.join(new)
+
+        new = new.replace(parantheticals(new)[-1], "")
+
+        new = new.strip()
+
+        new += filetype
+        
+        formatted.append(new)
+
+    return formatted
+
+def renameFilesToFormat(filenames, formatted):
+    for i in range(len(filenames)):
+        os.rename(directory + filenames[i], directory + formatted[i])
+
+def organizeBySeason(filenames):
+    prevSeason = -1
+
+    for filename in filenames:
+        episodeIndicator = re.findall(r"S\d\dE\d\d", filename)[0]
+        if (len(episodeIndicator) != 0):
+            season = int(episodeIndicator[1:3])
+            if season != prevSeason:
+                os.mkdir(directory + "Season " + str(season))
+                prevSeason = season
+            os.rename(directory + filename, directory + "Season " + str(season) + "\\" + filename)
+
+def getFilenames ():
+    filenames = []
+    for filename in os.listdir(directory):
+        if "." in filename:
+            filenames.append(filename)
+    return filenames
+
+def fullFormat (filenames):
+    relocateExtras(filenames)
+    renameFilesToFormat(filenames, formatNames(filenames, " - "))
+    organizeBySeason(filenames)
+
+fullFormat(getFilenames())
