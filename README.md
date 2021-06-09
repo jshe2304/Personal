@@ -1,2 +1,2 @@
 # Personal
-Personal Code. Mostly for personal fun or automate necessary tasks
+Personal Code. Mostly for personal fun or automating necessary tasks
